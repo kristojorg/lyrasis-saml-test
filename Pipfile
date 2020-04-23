@@ -8,6 +8,7 @@ verify_ssl = true
 [packages]
 Flask = "==1.0"
 onelogin = "*"
+pylint = "*"
 
 [requires]
 python_version = "3.7"
