@@ -12,6 +12,7 @@ python3-saml = "*"
 isodate = "*"
 defusedxml = "*"
 xmlsec = "*"
+gunicorn = "*"
 
 [requires]
 python_version = "3.7"
