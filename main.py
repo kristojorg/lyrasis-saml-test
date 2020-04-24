@@ -8,10 +8,9 @@ from urllib.parse import urlparse
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.utils import OneLogin_Saml2_Utils
 
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'onelogindemopytoolkit'
-app.config['SAML_PATH'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'saml')
+app.config['SAML_PATH'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'saml-prod')
 
 
 def init_saml_auth(req):
@@ -120,6 +119,15 @@ def index():
         paint_logout=paint_logout
     )
 
+@app.route('/protected-route')
+def protected_route():
+    req = prepare_flask_request(request)
+    auth = init_saml_auth(req)
+    # simply redirect back to this route.
+    # we will ultimately want to test if they are logged
+    # in here or not.
+    return redirect(auth.login())
+
 
 @app.route('/attrs/')
 def attrs():
@@ -152,5 +160,6 @@ def metadata():
 
 
 if __name__ == "__main__":
-    app.run();
-    # app.run(host='0.0.0.0', port=8000, debug=True)
+    app.config['ENV'] = 'development'
+    app.config['SAML_PATH'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'saml-local')
+    app.run(host='0.0.0.0', port=8000, debug=True)

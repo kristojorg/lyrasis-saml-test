@@ -1,0 +1,28 @@
+{
+  "strict": true,
+  "debug": true,
+  "sp": {
+    "entityId": "http://localhost:8000/metadata/",
+    "assertionConsumerService": {
+      "url": "http://localhost:8000/?acs",
+      "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+    },
+    "singleLogoutService": {
+      "url": "http://localhost:8000/?sls",
+      "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+    },
+    "NameIDFormat": "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"
+  },
+  "idp": {
+    "entityId": "https://capriza.github.io/samling/samling.html",
+    "singleSignOnService": {
+      "url": "https://capriza.github.io/samling/samling.html",
+      "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+    },
+    "singleLogoutService": {
+      "url": "https://capriza.github.io/samling/samling.html",
+      "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+    },
+    "x509cert": "MIIDCTCCAnKgAwIBAgIBATANBgkqhkiG9w0BAQUFADBvMRQwEgYDVQQDEwtjYXByaXphLmNvbTELMAkGA1UEBhMCVVMxETAPBgNVBAgTCFZpcmdpbmlhMRMwEQYDVQQHEwpCbGFja3NidXJnMRAwDgYDVQQKEwdTYW1saW5nMRAwDgYDVQQLEwdTYW1saW5nMB4XDTIwMDQyMzE4MjIxMFoXDTIxMDQyMzE4MjIxMFowbzEUMBIGA1UEAxMLY2Fwcml6YS5jb20xCzAJBgNVBAYTAlVTMREwDwYDVQQIEwhWaXJnaW5pYTETMBEGA1UEBxMKQmxhY2tzYnVyZzEQMA4GA1UEChMHU2FtbGluZzEQMA4GA1UECxMHU2FtbGluZzCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAq0xS7fhq79FgC+Ag1FGty5yC9zQwKAxzrZU/eavr1FixVBFmZJPI018h2IfuG1sZHaVOi9M1XsiLNFAEdBWIvCxgoIMb/NmdTRrn4kBUtHztV9He6Pj1BZz6yNObm2pQylk2sQFFusvkL9hfYSDigTeb3nxkSQJ7tzQo6oTR97UCAwEAAaOBtDCBsTAMBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIC9DA7BgNVHSUENDAyBggrBgEFBQcDAQYIKwYBBQUHAwIGCCsGAQUFBwMDBggrBgEFBQcDBAYIKwYBBQUHAwgwEQYJYIZIAYb4QgEBBAQDAgD3MCUGA1UdEQQeMByGGmh0dHA6Ly9jYXByaXphLmNvbS9zYW1saW5nMB0GA1UdDgQWBBSx0qSFOE3c6ZSNw2GmgVhwEW18zTANBgkqhkiG9w0BAQUFAAOBgQAjCjBys0Ww3fJtVZbCHkFo0pCZP2MKhcO/XnIZfEFsVyhDx4Ofa7c14zYd4l0o1gJ2fomlw+2vojEaSgSLWVH8+U+mmK06b+O49RlExa9xdGDqYMmp0MrLa6Cw1b5DQJV/CrXeAWnlVNPiXwTFWXXH+tInnpfBlMyThkkJh4Ds6w=="
+  }
+}
