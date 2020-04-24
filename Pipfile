@@ -7,9 +7,9 @@ verify_ssl = true
 
 [packages]
 Flask = "==1.0"
-onelogin = "*"
 pylint = "*"
 python3-saml = "*"
+onelogin = "*"
 
 [requires]
 python_version = "3.7"
