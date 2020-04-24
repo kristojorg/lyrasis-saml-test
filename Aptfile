@@ -1,2 +1,4 @@
 libxmlsec1-dev
 pkg-config
+libxmlsec1
+swig
