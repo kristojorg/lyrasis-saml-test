@@ -13,7 +13,7 @@ isodate = "*"
 defusedxml = "*"
 xmlsec = "*"
 gunicorn = "*"
-python-dotenv = "*"
+black = "*"
 
 [requires]
 python_version = "3.7"
