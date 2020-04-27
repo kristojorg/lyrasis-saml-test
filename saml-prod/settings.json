@@ -4,7 +4,7 @@
   "sp": {
     "entityId": "https://lyrasis-saml-test.herokuapp.com/metadata/",
     "assertionConsumerService": {
-      "url": "https://lyrasis-saml-test.herokuapp.com/?acs",
+      "url": "https://lyrasis-saml-test.herokuapp.com/saml-acs",
       "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
     },
     "singleLogoutService": {
