@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 pylint = "*"
+black = "*"
 
 [packages]
 Flask = "==1.0"
@@ -13,7 +14,9 @@ isodate = "*"
 defusedxml = "*"
 xmlsec = "*"
 gunicorn = "*"
-black = "*"
 
 [requires]
 python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true
