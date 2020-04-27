@@ -44,8 +44,6 @@ def prepare_flask_request(request):
 
 @app.route("/")
 def index():
-    req = prepare_flask_request(request)
-    auth = init_saml_auth(req)
     errors = []
     error_reason = None
     not_auth_warn = False
