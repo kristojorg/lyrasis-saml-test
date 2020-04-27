@@ -42,7 +42,7 @@ def prepare_flask_request(request):
     }
 
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/")
 def index():
     req = prepare_flask_request(request)
     auth = init_saml_auth(req)
@@ -52,79 +52,6 @@ def index():
     success_slo = False
     attributes = False
     paint_logout = False
-
-    if "sso" in request.args:
-        return redirect(auth.login())
-        # If AuthNRequest ID need to be stored in order to later validate it, do instead
-        # sso_built_url = auth.login()
-        # request.session['AuthNRequestID'] = auth.get_last_request_id()
-        # return redirect(sso_built_url)
-    elif "sso2" in request.args:
-        return_to = "%sattrs/" % request.host_url
-        return redirect(auth.login(return_to))
-    elif "slo" in request.args:
-        name_id = session_index = name_id_format = name_id_nq = name_id_spnq = None
-        if "samlNameId" in session:
-            name_id = session["samlNameId"]
-        if "samlSessionIndex" in session:
-            session_index = session["samlSessionIndex"]
-        if "samlNameIdFormat" in session:
-            name_id_format = session["samlNameIdFormat"]
-        if "samlNameIdNameQualifier" in session:
-            name_id_nq = session["samlNameIdNameQualifier"]
-        if "samlNameIdSPNameQualifier" in session:
-            name_id_spnq = session["samlNameIdSPNameQualifier"]
-
-        return redirect(
-            auth.logout(
-                name_id=name_id,
-                session_index=session_index,
-                nq=name_id_nq,
-                name_id_format=name_id_format,
-                spnq=name_id_spnq,
-            )
-        )
-    elif "acs" in request.args:
-        request_id = None
-        if "AuthNRequestID" in session:
-            request_id = session["AuthNRequestID"]
-
-        auth.process_response(request_id=request_id)
-        errors = auth.get_errors()
-        not_auth_warn = not auth.is_authenticated()
-        if len(errors) == 0:
-            if "AuthNRequestID" in session:
-                del session["AuthNRequestID"]
-            session["samlUserdata"] = auth.get_attributes()
-            session["samlNameId"] = auth.get_nameid()
-            session["samlNameIdFormat"] = auth.get_nameid_format()
-            session["samlNameIdNameQualifier"] = auth.get_nameid_nq()
-            session["samlNameIdSPNameQualifier"] = auth.get_nameid_spnq()
-            session["samlSessionIndex"] = auth.get_session_index()
-            self_url = OneLogin_Saml2_Utils.get_self_url(req)
-            if "RelayState" in request.form and self_url != request.form["RelayState"]:
-                return redirect(auth.redirect_to(request.form["RelayState"]))
-        elif auth.get_settings().is_debug_active():
-            error_reason = auth.get_last_error_reason()
-    elif "sls" in request.args:
-        request_id = None
-        if "LogoutRequestID" in session:
-            request_id = session["LogoutRequestID"]
-        dscb = lambda: session.clear()
-        url = auth.process_slo(request_id=request_id, delete_session_cb=dscb)
-        errors = auth.get_errors()
-        if len(errors) == 0:
-            if url is not None:
-                return redirect(url)
-            else:
-                success_slo = True
-        elif auth.get_settings().is_debug_active():
-            error_reason = auth.get_last_error_reason()
-
-    if "samlUserdata" in session:
-        paint_logout = True
-        if len(session["samlUserdata"]) > 0:
-            attributes = session["samlUserdata"].items()
 
     return render_template(
         "index.html",
@@ -137,8 +64,90 @@ def index():
     )
 
 
-@app.route("/protected-route")
-def protected_route():
+@app.route("/login/<provider_id>")
+def saml_login(provider_id):
+    # for now there is only one provider so we log you in with that
+    req = prepare_flask_request(request)
+    auth = init_saml_auth(req)
+    return redirect(auth.login(request.host_url))
+
+
+users_map = {}
+
+
+def set_user(auth):
+    name = auth.get_nameid()
+    total_users = len(users_map.keys())
+    user = {
+        "number": total_users + 1,
+        "name": name,
+        "token": name,
+        "attributes": auth.get_attributes(),
+        "samlData": {
+            "nameId": auth.get_nameid(),
+            "nameIdFormat": auth.get_nameid_format(),
+            "nameIdNameQualifier": auth.get_nameid_nq(),
+            "nameIdSPNameQualifier": auth.get_nameid_spnq(),
+            "sessionIndex": auth.get_session_index(),
+        },
+    }
+    users_map[name] = user
+
+
+def get_user(name):
+    return users_map.get(name)
+
+
+def delete_user(name):
+    return users_map.pop(name, None)
+
+
+def get_all_users():
+    return users_map
+
+
+@app.route("/saml-acs", methods=["POST"])
+def saml_acs():
+    req = prepare_flask_request(request)
+    auth = init_saml_auth(req)
+    request_id = None
+    if "AuthNRequestID" in session:
+        request_id = session["AuthNRequestID"]
+    auth.process_response(request_id=request_id)
+    errors = auth.get_errors()
+    not_auth_warn = not auth.is_authenticated()
+    if not_auth_warn:
+        return "You are not authenticated", 401
+    if len(errors) == 0:
+        if "AuthNRequestID" in session:
+            del session["AuthNRequestID"]
+
+        # set the user. This is where we would normally create a
+        # JWT for the user and save that in memory
+        set_user(auth)
+
+        # send success message with the auth token in header
+        auth_token = get_user(auth.get_nameid())["token"]
+
+        self_url = OneLogin_Saml2_Utils.get_self_url(req)
+        redirect_path = "/"
+        if "RelayState" in request.form and self_url != request.form["RelayState"]:
+            redirect_path = request.form["RelayState"]
+
+        # we either redirect to the passed url, or to the home page
+        # either way with the token in a query param
+        redirect_url = auth.redirect_to(redirect_path, {"token": auth_token})
+        return redirect(redirect_url)
+
+    elif auth.get_settings().is_debug_active():
+        error_reason = auth.get_last_error_reason()
+        print("ERROR REASON")
+        print(error_reason)
+
+    return "Auth error", 401
+
+
+def unauthorized():
     resp = {
         "message": "Unauthorized",
         "data": {
@@ -148,32 +157,24 @@ def protected_route():
     return make_response(jsonify(resp), 401)
 
 
-@app.route("/login/<provider_id>")
-def saml_login(provider_id):
-    # for now there is only one provider so we log you in with that
-    req = prepare_flask_request(request)
-    auth = init_saml_auth(req)
-    return redirect(auth.login())
+@app.route("/me")
+def protected_route():
+    bearer = request.headers.get("Authorization")
+    if not bearer:
+        return unauthorized()
+    token = bearer.split(" ")[1]
+    if not token:
+        return unauthorized()
+    user = get_user(token)
+    if not user:
+        return unauthorized()
+    # otherwise you're authenticated, return the user
+    return jsonify(user)
 
 
-# app.route("/saml-acs")
-# def saml_acs():
-
-
-
-@app.route("/attrs/")
-def attrs():
-    paint_logout = False
-    attributes = False
-
-    if "samlUserdata" in session:
-        paint_logout = True
-        if len(session["samlUserdata"]) > 0:
-            attributes = session["samlUserdata"].items()
-
-    return render_template(
-        "attrs.html", paint_logout=paint_logout, attributes=attributes
-    )
+@app.route("/users")
+def users():
+    return jsonify(get_all_users())
 
 
 @app.route("/metadata/")
@@ -190,6 +191,32 @@ def metadata():
     else:
         resp = make_response(", ".join(errors), 500)
     return resp
+
+
+def logout_fail():
+    return (
+        jsonify({"status": "Error", "message": "Provide a valid token to log out",}),
+        400,
+    )
+
+
+# simply delete the user from the users_map
+# and return a success message
+@app.route("/logout", methods=["POST"])
+def single_logout_handler():
+    data = request.get_json()
+    if not data:
+        return logout_fail()
+    token = data.get("token")
+    user = get_user(token)
+    if not token or not user:
+        return logout_fail()
+    delete_user(token)
+
+    return (
+        jsonify({"status": "Success", "message": "You've successfully logged out"}),
+        200,
+    )
 
 
 if __name__ == "__main__":

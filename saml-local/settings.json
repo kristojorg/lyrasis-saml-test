@@ -4,7 +4,7 @@
   "sp": {
     "entityId": "http://localhost:8000/metadata/",
     "assertionConsumerService": {
-      "url": "http://localhost:8000/?acs",
+      "url": "http://localhost:8000/saml-acs",
       "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
     },
     "singleLogoutService": {
