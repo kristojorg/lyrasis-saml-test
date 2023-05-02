@@ -8,7 +8,7 @@ pylint = "*"
 black = "*"
 
 [packages]
-Flask = "==1.0"
+Flask = "==2.2.5"
 python3-saml = "*"
 isodate = "*"
 defusedxml = "*"
